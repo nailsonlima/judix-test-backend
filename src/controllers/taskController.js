@@ -5,7 +5,19 @@ import Task from '../models/Task.js';
 // @access  Private
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user.id });
+    const { search, completed } = req.query;
+
+    const query = { user: req.user.id };
+
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+
+    if (completed !== undefined) {
+      query.completed = completed === 'true';
+    }
+
+    const tasks = await Task.find(query);
     res.status(200).json({ status: 'success', data: tasks });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
